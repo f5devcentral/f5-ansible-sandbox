@@ -1,0 +1,33 @@
+---
+
+- import_tasks: dependencies.yaml
+
+- name: Wait for BIG-IP to be available
+  bigip_wait:
+    timeout: 300
+    provider: "{{ provider }}"
+  delegate_to: localhost
+  register: status
+  until: status is success
+  retries: 10
+  delay: 6
+
+- name: Get current provisioning information
+  bigip_device_facts:
+    gather_subset:
+      - provision-info
+    provider: "{{ provider }}"
+  register: f
+  delegate_to: localhost
+
+- name: Assert that GTM is provisioned
+  assert:
+    that:
+      - "'gtm' not in f.provision_info | json_query(\"[?level=='none'].name\")"
+    fail_msg: GTM must be provisioned to use this role.
+
+- import_tasks: setup.yaml
+  when: bigip_glsb_state == 'present'
+
+- import_tasks: teardown.yaml
+  when: bigip_glsb_state == 'absent'

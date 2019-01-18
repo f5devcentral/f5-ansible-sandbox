@@ -1,0 +1,38 @@
+{
+    "class": "AS3",
+    "action": "deploy",
+    "persist": true,
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.7.0",
+        "id": "testid",
+        "label": "HTTp Config",
+        "remark": "Simple HTTP Service with Round-Robin Load Balancing",
+        "VS_tenant": {
+            "class": "Tenant",
+            "A1": {
+                "class": "Application",
+                "template": "http",
+                "serviceMain": {
+                    "class": "Service_HTTP",
+                    "virtualAddresses": [
+                        "10.192.75.85"
+                    ],
+                    "pool": "web_pool"
+                },
+                "web_pool": {
+                    "class": "Pool",
+                    "monitors": [
+                        "http"
+                    ],
+                    "members": [{
+                        "servicePort": 80,
+                        "serverAddresses": [
+                            "10.192.75.64"
+                        ]
+                    }]
+                }
+            }
+        }
+    }
+}

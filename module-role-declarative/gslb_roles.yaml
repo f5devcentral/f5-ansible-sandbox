@@ -1,0 +1,13 @@
+- name: GSLB with Roles
+  hosts: dns
+  gather_facts: false
+
+  vars:
+    provider: "{{ hostvars[inventory_hostname]['provider'] }}"
+
+  tasks:
+
+  - name: GSLB Role
+    import_role:
+      name: f5devcentral.bigip_gslb
+ 

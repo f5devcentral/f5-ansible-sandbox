@@ -1,0 +1,55 @@
+{
+    "schemaVersion": "1.1.0",
+    "class": "Device",
+	"async": true,
+    "Common": {
+    	"class": "Tenant",
+        "hostname": "decname.demo.local",
+        "myDns": {
+            "class": "DNS",
+            "nameServers": [
+            	"10.192.50.10"
+            ],
+            "search": [
+                "f5.com"
+            ]
+        },
+        "myNtp": {
+            "class": "NTP",
+            "servers": [
+            	"0.pool.ntp.org",
+                "1.pool.ntp.org"
+            ],
+            "timezone": "UTC"
+        },
+        "myProvisioning": {
+        	"class": "Provision",
+        	"ltm": "nominal",
+        	"gtm": "nominal"
+        },
+        "ext": {
+            "class": "VLAN",
+            "tag": 1234,
+            "mtu": 1500,
+            "interfaces": [
+                {
+                    "name": "1.0",
+                    "tagged": false
+                }
+            ]
+        },
+        "ext-self": {
+            "class": "SelfIp",
+            "address": "10.192.75.89/24",
+            "vlan": "ext",
+            "allowService": "all",
+            "trafficGroup": "traffic-group-local-only"
+        },
+        "ext_gw": {
+            "class": "Route",
+            "gw": "10.192.75.1",
+            "network": "default",
+            "mtu": 1500
+        }
+    }
+}

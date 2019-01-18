@@ -1,0 +1,111 @@
+- name: GSLB with F5 Automation Toolchain
+  hosts: dns
+  gather_facts: false
+  connection: local
+
+  vars:
+    provider: "{{ hostvars[inventory_hostname]['provider'] }}"
+
+  tasks:
+
+  #############
+  ### GSLB
+  #############
+  - name: Push AS3 (GSLB/DNS)
+    uri:
+      url: "https://{{ hostvars[inventory_hostname]['provider']['server'] }}:{{ hostvars[inventory_hostname]['provider']['server_port'] }}/mgmt/shared/appsvcs/declare?async=true"
+      method: POST
+      user: admin
+      password: "{{ hostvars[inventory_hostname]['provider']['password'] }}"
+      body: "{{ lookup('file','apps/as3_gslb.json') }}"
+      status_code: 202
+      timeout: 10
+      body_format: json
+      validate_certs: no
+    register: as3out
+
+  - name: Verify AS3 (GSLB/DNS) Status
+    uri:
+      url: "https://{{ hostvars[inventory_hostname]['provider']['server'] }}:{{ hostvars[inventory_hostname]['provider']['server_port'] }}/mgmt/shared/appsvcs/task/{{ as3out.json.id }}"
+      method: GET
+      user: admin
+      password: "{{ hostvars[inventory_hostname]['provider']['password'] }}"
+      status_code: 200
+      timeout: 10
+      body_format: json
+      validate_certs: no
+    register: status
+    until: status.json[0].results != "pending"
+    retries: 12
+    delay: 5
+    
+  - set_fact:
+      chg: "{{ item.message }}"
+    changed_when: item.message == "success"
+    with_items: "{{ status.json[0].results.response.results }}"
+
+  #############
+  ### L4-L7
+  #############
+  - name: Push AS3 (L4-L7)
+    uri:
+      url: "https://{{ hostvars[inventory_hostname]['provider']['server'] }}:{{ hostvars[inventory_hostname]['provider']['server_port'] }}/mgmt/shared/appsvcs/declare?async=true"
+      method: POST
+      user: admin
+      password: "{{ hostvars[inventory_hostname]['provider']['password'] }}"
+      body: "{{ lookup('file','apps/as3_apps.json') }}"
+      status_code: 202
+      timeout: 10
+      body_format: json
+      validate_certs: no
+    register: as3out
+
+  - name: Verify AS3 (L4-L7) Status
+    uri:
+      url: "https://{{ hostvars[inventory_hostname]['provider']['server'] }}:{{ hostvars[inventory_hostname]['provider']['server_port'] }}/mgmt/shared/appsvcs/task/{{ as3out.json.id }}"
+      method: GET
+      user: admin
+      password: "{{ hostvars[inventory_hostname]['provider']['password'] }}"
+      status_code: 200
+      timeout: 10
+      body_format: json
+      validate_certs: no
+    register: status
+    until: status.json[0].results != "pending"
+    retries: 12
+    delay: 5
+
+  - set_fact:
+      chg: "{{ item.message }}"
+    changed_when: item.message == "success"
+    with_items: "{{ status.json[0].results.response.results }}"
+
+  # #############
+  # ### Onboard
+  # #############
+  # - name: Push Declarative Onboarding
+  #   uri:
+  #     url: "https://{{ hostvars[inventory_hostname]['provider']['server'] }}:{{ hostvars[inventory_hostname]['provider']['server_port'] }}/mgmt/shared/declarative-onboarding"
+  #     method: POST
+  #     user: admin
+  #     password: "{{ hostvars[inventory_hostname]['provider']['password'] }}"
+  #     body: "{{ lookup('file','host_vars/' + inventory_hostname + '/do.json') }}"
+  #     status_code: 202
+  #     timeout: 10
+  #     body_format: json
+  #     validate_certs: no
+
+  # - name: Verify Declarative Onboarding
+  #   uri:
+  #     url: "https://{{ hostvars[inventory_hostname]['provider']['server'] }}:{{ hostvars[inventory_hostname]['provider']['server_port'] }}/mgmt/shared/declarative-onboarding"
+  #     method: GET
+  #     user: admin
+  #     password: "{{ hostvars[inventory_hostname]['provider']['password'] }}"
+  #     status_code: 200
+  #     timeout: 10
+  #     body_format: json
+  #     validate_certs: no
+  #   register: status
+  #   until: status.json.result.code == 200
+  #   retries: 12
+  #   delay: 5

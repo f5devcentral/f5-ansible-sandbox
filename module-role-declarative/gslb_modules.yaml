@@ -1,0 +1,47 @@
+- name: GSLB with Modules
+  hosts: dns
+  gather_facts: false
+
+  vars:
+    provider: "{{ hostvars[inventory_hostname]['provider'] }}"
+
+  tasks:
+
+  - name: Create WIP Pool
+    bigip_gtm_pool:
+      provider: "{{ provider }}"
+      name: "{{ bigip_glsb_pools[0].name }}"
+      type: "{{ bigip_glsb_record_type }}"
+      preferred_lb_method: "{{ bigip_glsb_pools[0].preferred_lb_method | default(omit)}}"
+      alternate_lb_method: "{{ bigip_glsb_pools[0].alternate_lb_method | default(omit)}}"
+      fallback_lb_method: "{{ bigip_glsb_pools[0].fallback_lb_method | default(omit)}}"
+      monitors: "{{ bigip_glsb_pools[0].monitors | default(omit) }}"
+    delegate_to: localhost
+
+  - name: Create GTM Virtual Server
+    bigip_gtm_virtual_server:
+      provider: "{{ provider }}"
+      address: "{{ bigip_glsb_pools[0].members[0].virtual_server.split(':')[0] }}"
+      name: "{{ bigip_glsb_pools[0].members[0].virtual_server }}"
+      port: "{{ bigip_glsb_pools[0].members[0].virtual_server.split(':')[1] }}"
+      server_name: "{{ bigip_glsb_pools[0].members[0].server }}"
+    delegate_to: localhost
+
+  - name: Create WIP Pool Members
+    bigip_gtm_pool_member:
+      provider: "{{ provider }}"
+      pool: "{{ bigip_glsb_pools[0].name }}"
+      type: "{{ bigip_glsb_record_type }}"
+      server_name: "{{ bigip_glsb_pools[0].members[0].server }}"
+      virtual_server: "{{ bigip_glsb_pools[0].members[0].virtual_server }}"
+      ratio: "{{bigip_glsb_pools[0].ratio | default(omit) }}"
+    delegate_to: localhost
+
+  - name: Create WIP
+    bigip_gtm_wide_ip:
+      provider: "{{ provider }}"
+      name: "{{ bigip_glsb_app_name }}.{{ bigip_glsb_app_domain }}"
+      type: "{{ bigip_glsb_record_type }}"
+      pools: ["name": "{{ bigip_glsb_pools[0].name }}" ]
+      pool_lb_method: "{{ bigip_glsb_pool_lb_method }}"
+    delegate_to: localhost

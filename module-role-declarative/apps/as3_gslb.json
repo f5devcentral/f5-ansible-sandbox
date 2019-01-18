@@ -1,0 +1,67 @@
+{
+	"class": "ADC",
+	"schemaVersion": "3.7.0",
+	"id": "GSLB_Example",
+	"Common": {
+		"class": "Tenant",
+		"Shared": {
+			"class": "Application",
+			"template": "shared",
+            "decServer": {
+                "class": "GSLB_Server",
+                "serverType": "bigip",
+                "monitors": [{
+                  "bigip": "/Common/bigip"
+                }
+                ],
+                "dataCenter": {
+                    "use": "decDataCenter"
+                },
+                "devices": [
+                    {
+                        "address": "10.192.75.89"
+                    }
+				],
+				"virtualServers": [
+					{
+						"address": "10.192.75.85",
+						"port": 80
+					}
+				]
+            },
+			"decDataCenter": {
+				"class": "GSLB_Data_Center"
+			}
+		}
+	},
+	"GSLB_tenant": {
+		"class": "Tenant",
+		"Application": {
+			"class": "Application",
+			"template": "generic",
+			"testapp_pool": {
+				"class": "GSLB_Pool",
+				"members": [
+					{
+						"ratio": 10,
+						"server": {
+							"use": "/Common/Shared/decServer"
+						},
+						"virtualServer": "0"
+					}
+				],
+				"resourceRecordType": "A"
+			},
+			"testDomain": {
+				"class": "GSLB_Domain",
+				"domainName": "testapp-declare.gslb.local.com",
+				"resourceRecordType": "A",
+				"pools": [
+					{
+						"use": "testapp_pool"
+					}
+				]
+			}
+		}
+	}
+}
