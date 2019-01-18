@@ -1,6 +1,7 @@
 ## Description
 Example ansible environment which includes 3 playbooks which accomplish a similar task using different approaches. The intent is to highlight the benefits of abstraction when utlilizing automation tools. The examples here are meant as a starting point to build your automation story and not as a comprehensive solution.
 
+
 #### Playbook Overviews
 * **gslb_modules.yaml** creates an F5 GSLB object using modules (no app or loop logic built in).
 * **gslb_roles.yaml** creates the same F5 GSLB object using the [bigip_gslb](https://galaxy.ansible.com/f5devcentral/bigip_gslb) role hosted on **Ansible Galaxy**.
