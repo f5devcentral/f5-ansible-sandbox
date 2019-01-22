@@ -1,6 +1,10 @@
 ## Description
 Example ansible environment which includes 3 playbooks which accomplish a similar task using different approaches. The intent is to highlight the benefits of abstraction when utlilizing automation tools. The examples here are meant as a starting point to build your automation story and not as a comprehensive solution.
 
+#### Dependencies
+The following extensions are needed only for the declarative playbook:
+* Application Services 3 [AS3](https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/)
+* Declarative Onboarding [DO](https://clouddocs.f5.com/products/extensions/f5-declarative-onboarding/latest/)
 
 #### Playbook Overviews
 * **gslb_modules.yaml** creates an F5 GSLB object using modules (no app or loop logic built in).
