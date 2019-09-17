@@ -41,7 +41,7 @@
      active: yes
      state: present
 
-  - name: Replace a forward action with an ASM action - Idempotent check
+  - name: Replace a forward action with an ASM action
     bigip_policy_rule:
      policy: asm-policy
      name: rule1
