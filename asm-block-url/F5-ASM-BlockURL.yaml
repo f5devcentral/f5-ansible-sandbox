@@ -67,21 +67,3 @@
     bigip_policy:
      name: asm-policy
      state: present
-
-#Attach ASM profile to the virtual server amongst other configurations
-  - name: Add Virtual Server
-    bigip_virtual_server:
-     name: "{{vip_name}}"
-     destination: "{{vip_ip}}"
-     port: "{{vip_port}}"
-     pool: "http-pool"
-     snat: "Automap"
-     profiles:
-      - http
-      - name: clientssl
-        context: client-side
-      - name: serverssl-insecure-compatible
-        context: server-side
-      - websecurity
-     policies:
-      - asm-policy
