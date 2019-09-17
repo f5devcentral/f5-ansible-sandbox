@@ -9,6 +9,6 @@ vip_ip: 172.16.192.116
 vip_name: Test-VIP  
 vip_port: '443'  
 Blocked_URLs:  
-  - /blocked.html  
-  - /hacked.html  
-  - /robot.txt  
+  \- /blocked.html  
+  \- /hacked.html  
+  \- /robot.txt  
