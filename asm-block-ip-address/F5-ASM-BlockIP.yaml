@@ -1,0 +1,67 @@
+  
+- name: Update-XML
+  hosts: localhost
+  connection: local
+  
+#Environment variables defined
+  environment:
+    F5_USER: "{{ F5_Username }}"
+    F5_PASSWORD: "{{ F5_Password }}"
+    F5_SERVER_PORT: "{{ F5_Admin_Port }}" #"443"
+    F5_VALIDATE_CERTS: "False"
+  
+  tasks:  
+#Import Additional Disallowed URLs 
+  - name: Add Disallowed URLs
+    xml:
+      path: asm_policy.xml
+      pretty_print: yes
+      input_type: xml
+      insertafter: yes
+      xpath: /policy/geolocation
+      add_children: "<whitelist><ip_address>{{ item }}</ip_address><subnet_mask>255.255.255.255</subnet_mask><policy_builder_trusted>false</policy_builder_trusted><ignore_anomalies>false</ignore_anomalies><never_log>false</never_log><block_ip>Always</block_ip><never_learn>false</never_learn><description>blocked</description><ignore_ip_reputation>false</ignore_ip_reputation></whitelist>"
+    with_lines: cat ipaddress.xml
+  
+#Re-Deploy ASM policy
+  - name: Create an LTM policy
+    bigip_policy:
+     provider:
+       server: "{{ F5_IPAddress }}"
+     name: asm-policy
+     state: present
+
+  - name: Import ASM policy
+    bigip_asm_policy_import:
+     provider:
+       server: "{{ F5_IPAddress }}"
+     name: Demo
+     source: "asm_policy.xml"
+     force: yes
+    delegate_to: localhost
+
+  - name: Activate ASM policy
+    bigip_asm_policy_manage:
+     provider:
+       server: "{{ F5_IPAddress }}"
+     name: Demo
+     active: yes
+     state: present
+    delegate_to: localhost
+
+  - name: Replace a forward action with an ASM action - Idempotent check
+    bigip_policy_rule:
+     provider:
+       server: "{{ F5_IPAddress }}"
+     policy: asm-policy
+     name: rule1
+     actions:
+     - type: enable
+       asm_policy: Demo
+       
+ #Re-Deploy Draft ASM policy
+  - name: Deploy Draft ASM policy
+    bigip_policy:
+     provider:
+       server: "{{ F5_IPAddress }}"
+     name: asm-policy
+     state: present
