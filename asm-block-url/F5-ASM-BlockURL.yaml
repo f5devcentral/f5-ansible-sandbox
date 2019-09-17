@@ -32,9 +32,9 @@
       pretty_print: yes
       xpath: /policy/urls/disallowed_urls
       add_children: 
-        - "<url protocol=\"HTTP\" type=\"explicit\" name=\"/{{ item }}\"/>"
-        - "<url protocol=\"HTTPS\" type=\"explicit\" name=\"/{{ item }}\"/>"
-    with_lines: cat blocked_urls.xml
+        - "<url protocol=\"HTTP\" type=\"explicit\" name=\"{{ item }}\"/>"
+        - "<url protocol=\"HTTPS\" type=\"explicit\" name=\"{{ item }}\"/>"
+    with_items: "{{ Blocked_URLs }}"
   
 #Re-Deploy ASM policy
   - name: Create an LTM policy
@@ -47,16 +47,14 @@
      name: Demo
      source: "{{ ASM_Policy }}" 
      force: yes
-    delegate_to: localhost
 
   - name: Activate ASM policy
     bigip_asm_policy_manage:
      name: Demo
      active: yes
      state: present
-    delegate_to: localhost
 
-  - name: Replace a forward action with an ASM action - Idempotent check
+  - name: Replace a forward action with an ASM action
     bigip_policy_rule:
      policy: asm-policy
      name: rule1
@@ -87,4 +85,3 @@
       - websecurity
      policies:
       - asm-policy
-    delegate_to: localhost
